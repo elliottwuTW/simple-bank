@@ -44,6 +44,12 @@ func (dao *AccountDAO) CreateAccount(
 	return account, nil
 }
 
+func (d *Database) CreateAccount(
+	ctx context.Context, params CreateAccountParams,
+) (model.Account, error) {
+	return d.accountDAO.CreateAccount(ctx, params)
+}
+
 func (dao *AccountDAO) GetAccount(
 	ctx context.Context, id primitive.ObjectID,
 ) (model.Account, error) {
