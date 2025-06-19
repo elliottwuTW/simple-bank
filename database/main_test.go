@@ -5,12 +5,19 @@ import (
 	"log"
 	"os"
 	"testing"
+
+	"github.com/simple_bank/config"
 )
 
 var testDB *Database
 
 func TestMain(m *testing.M) {
-	db, err := New(context.Background())
+	cfg, err := config.LoadConfig("..")
+	if err != nil {
+		log.Fatal("cannot load config", err)
+	}
+
+	db, err := New(context.Background(), cfg.DB)
 	if err != nil {
 		log.Fatal("database initialization fail", err)
 	}

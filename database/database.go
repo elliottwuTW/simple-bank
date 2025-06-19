@@ -3,22 +3,20 @@ package database
 import (
 	"context"
 
+	"github.com/simple_bank/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-const uri = "mongodb://localhost:27017"
-const db = "simple-bank"
-
 type Database struct {
 	db         *mongo.Database
 	accountDAO AccountDAO
 }
 
-func New(ctx context.Context) (*Database, error) {
-	opt := options.Client().ApplyURI(uri)
+func New(ctx context.Context, cfg config.DBConfig) (*Database, error) {
+	opt := options.Client().ApplyURI(cfg.URI)
 	client, err := mongo.Connect(ctx, opt)
 	if err != nil {
 		return nil, err
@@ -30,7 +28,7 @@ func New(ctx context.Context) (*Database, error) {
 		return nil, err
 	}
 
-	db := client.Database(db)
+	db := client.Database(cfg.Name)
 	return &Database{
 		db:         db,
 		accountDAO: newAccountDAO(db),
