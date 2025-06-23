@@ -9,7 +9,7 @@ import (
 	"github.com/simple_bank/config"
 )
 
-var testDB *Database
+var testDB Database
 
 func TestMain(m *testing.M) {
 	cfg, err := config.LoadConfig("..")

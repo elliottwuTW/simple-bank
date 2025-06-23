@@ -24,11 +24,11 @@ type TransferTxResult struct {
 
 // TransferTx performs a money transfer from one account to the other.
 // It creates the transfer, add account entries, and update accounts' balance within a database transaction
-func (d *Database) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (d *MongoDB) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	// 因為 transaction 沒辦法回傳結果，可以把變數放在外面，透過 closure 把結果讀回來
-	err := d.execTx(ctx, func(ctx context.Context, d *Database) error {
+	err := d.execTx(ctx, func(ctx context.Context, d Database) error {
 		var err error
 
 		// 建立 transfer

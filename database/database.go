@@ -4,18 +4,20 @@ import (
 	"context"
 
 	"github.com/simple_bank/config"
+	"github.com/simple_bank/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type Database struct {
+type MongoDB struct {
 	db         *mongo.Database
 	accountDAO AccountDAO
 }
 
-func New(ctx context.Context, cfg config.DBConfig) (*Database, error) {
+func New(ctx context.Context, cfg config.DBConfig) (Database, error) {
 	opt := options.Client().ApplyURI(cfg.URI)
 	client, err := mongo.Connect(ctx, opt)
 	if err != nil {
@@ -29,17 +31,17 @@ func New(ctx context.Context, cfg config.DBConfig) (*Database, error) {
 	}
 
 	db := client.Database(cfg.Name)
-	return &Database{
+	return &MongoDB{
 		db:         db,
 		accountDAO: newAccountDAO(db),
 	}, nil
 }
 
-func (d *Database) execTx(
+func (d *MongoDB) execTx(
 	ctx context.Context,
 	fn func(
 		ctx context.Context,
-		d *Database,
+		d Database,
 	) error,
 ) error {
 	rc := readconcern.Majority()
@@ -61,4 +63,28 @@ func (d *Database) execTx(
 		txnOpts,
 	)
 	return err
+}
+
+func (d *MongoDB) CreateAccount(
+	ctx context.Context, params CreateAccountParams,
+) (model.Account, error) {
+	return d.accountDAO.CreateAccount(ctx, params)
+}
+
+func (d *MongoDB) GetAccount(
+	ctx context.Context, id primitive.ObjectID,
+) (model.Account, error) {
+	return d.accountDAO.GetAccount(ctx, id)
+}
+
+func (d *MongoDB) UpdateAccount(
+	ctx context.Context, params UpdateAccountParams,
+) (model.Account, error) {
+	return d.accountDAO.UpdateAccount(ctx, params)
+}
+
+func (d *MongoDB) DeleteAccount(
+	ctx context.Context, id primitive.ObjectID,
+) error {
+	return d.accountDAO.DeleteAccount(ctx, id)
 }

@@ -24,7 +24,7 @@ func TestTransferTx(t *testing.T) {
 	// 連續 5 次轉帳 10 元
 	for i := 0; i < n; i++ {
 		go func() {
-			result, err := testDB.accountDAO.CreateAccount(context.Background(), CreateAccountParams{})
+			result, err := testDB.CreateAccount(context.Background(), CreateAccountParams{})
 
 			// 用 channel 一個一個檢查結果
 			errs <- err
