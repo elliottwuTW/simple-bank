@@ -23,6 +23,7 @@ func NewServer(db database.Database) *Server {
 	}
 
 	router.POST("/accounts", server.createAccount)
+	router.POST("/users", server.createUser)
 
 	server.router = router
 	return server
