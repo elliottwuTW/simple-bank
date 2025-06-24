@@ -21,4 +21,7 @@ type Database interface {
 	DeleteAccount(
 		ctx context.Context, id primitive.ObjectID,
 	) error
+	CreateUser(
+		ctx context.Context, params CreateUserParams,
+	) (model.User, error)
 }

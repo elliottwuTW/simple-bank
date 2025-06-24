@@ -15,6 +15,7 @@ import (
 type MongoDB struct {
 	db         *mongo.Database
 	accountDAO AccountDAO
+	userDAO    UserDAO
 }
 
 func New(ctx context.Context, cfg config.DBConfig) (Database, error) {
@@ -34,6 +35,7 @@ func New(ctx context.Context, cfg config.DBConfig) (Database, error) {
 	return &MongoDB{
 		db:         db,
 		accountDAO: newAccountDAO(db),
+		userDAO:    newUserDAO(db),
 	}, nil
 }
 
@@ -63,6 +65,12 @@ func (d *MongoDB) execTx(
 		txnOpts,
 	)
 	return err
+}
+
+func (d *MongoDB) CreateUser(
+	ctx context.Context, params CreateUserParams,
+) (model.User, error) {
+	return d.userDAO.CreateUser(ctx, params)
 }
 
 func (d *MongoDB) CreateAccount(
