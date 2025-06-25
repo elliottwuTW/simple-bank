@@ -5,11 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/simple_bank/database"
+	"github.com/simple_bank/token"
 )
 
 type CreateAccountReq struct {
 	// https://pkg.go.dev/github.com/go-playground/validator/v10#section-readme
-	Owner    string `json:"owner"    binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -21,8 +21,11 @@ func (s *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	// 從 ctx 提取出登入的使用者
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := database.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}

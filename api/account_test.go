@@ -73,7 +73,7 @@ func TestCreateAccountAPI(t *testing.T) {
 
 		// 產生 request 來送給 HTTP server
 		path := "/accounts"
-		body := CreateAccountReq{Owner: account.Owner, Currency: account.Currency}
+		body := CreateAccountReq{Currency: account.Currency}
 		marshalled, err := json.Marshal(body)
 		require.NoError(t, err)
 		request, err := http.NewRequest(
