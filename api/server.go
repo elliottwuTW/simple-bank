@@ -40,7 +40,10 @@ func (s *Server) setupRouter() {
 	router.POST("/users", s.createUser)
 	router.POST("/users/login", s.loginUser)
 
-	router.POST("/accounts", s.createAccount)
+	// 以下 api 需要 auth
+	authRoutes := router.Group("/").Use(authMiddleware(s.tokenMaker))
+
+	authRoutes.POST("/accounts", s.createAccount)
 
 	s.router = router
 }
