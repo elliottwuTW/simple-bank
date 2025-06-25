@@ -23,7 +23,11 @@ func main() {
 		log.Fatal("cannot initialize database", err)
 	}
 
-	server := api.NewServer(db)
+	server, err := api.NewServer(db, cfg)
+	if err != nil {
+		log.Fatal("cannot create server", err)
+	}
+
 	err = server.Start(cfg.ServerAddress)
 	if err != nil {
 		log.Fatal("cannot initialize server")

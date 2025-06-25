@@ -113,7 +113,7 @@ func TestCreateUserAPI(t *testing.T) {
 		tc.buildStubs(db)
 
 		// Start test server and send request
-		server := NewServer(db)
+		server := newTestServer(t, db)
 		// We don't need to start a REAL HTTP server.
 		// Instead, we can just use the Recorder feature
 		// of the httptest package

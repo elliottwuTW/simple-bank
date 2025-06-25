@@ -4,29 +4,45 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/simple_bank/config"
 	"github.com/simple_bank/database"
+	"github.com/simple_bank/token"
 )
 
 // Server serves HTTP requests for our service.
 type Server struct {
-	db     database.Database
-	router *gin.Engine
+	db         database.Database
+	config     config.Config
+	tokenMaker token.Maker
+	router     *gin.Engine
 }
 
-func NewServer(db database.Database) *Server {
-	server := &Server{db: db}
-	router := gin.Default()
+func NewServer(db database.Database, config config.Config) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.Token.SymmetricKey)
+	if err != nil {
+		return nil, err
+	}
+
+	server := &Server{db: db, tokenMaker: tokenMaker}
 
 	// 取得 Gin 背後的 validator engine
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
 	}
 
-	router.POST("/accounts", server.createAccount)
-	router.POST("/users", server.createUser)
+	server.setupRouter()
+	return server, nil
+}
 
-	server.router = router
-	return server
+func (s *Server) setupRouter() {
+	router := gin.Default()
+
+	router.POST("/users", s.createUser)
+	router.POST("/users/login", s.loginUser)
+
+	router.POST("/accounts", s.createAccount)
+
+	s.router = router
 }
 
 // Start runs the HTTP server on specific address.
