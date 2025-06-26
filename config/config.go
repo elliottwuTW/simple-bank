@@ -32,6 +32,9 @@ func LoadConfig(path string) (Config, error) {
 
 	// Overwrite file config with environment variable if exists.
 	viper.AutomaticEnv()
+	// 因為使用 JSON 格式指定環境變數，因應會從外部修改值，讓 docker 指令的 -e
+	// 也可以用 DB_URI 的方式給進來
+	viper.BindEnv("db.uri", "DB_URI")
 
 	err := viper.ReadInConfig()
 	if err != nil {
