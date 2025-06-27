@@ -1,12 +1,16 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 	"github.com/simple_bank/database"
 	"github.com/simple_bank/model"
 	"github.com/simple_bank/util"
+	"github.com/simple_bank/worker"
 )
 
 type CreateUserReq struct {
@@ -43,6 +47,22 @@ func (s *Server) createUser(ctx *gin.Context) {
 		// return
 		// }
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// 執行寄送驗證信任務
+	taskPayload := worker.PayloadSendVerifyEmail{Username: user.Username}
+	taskOpt := []asynq.Option{
+		asynq.MaxRetry(10),                // 此任務至多嘗試 10 次
+		asynq.ProcessIn(5 * time.Second),  // 5 秒後再執行
+		asynq.Queue(worker.QueueCritical), // 要送到 critical 的 queue
+	}
+	err = s.distributor.DistributeTaskSendVerifyEmail(ctx, &taskPayload, taskOpt...)
+	if err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			errorResponse(fmt.Errorf("failed to distribute task to send verify email: %w", err)),
+		)
 		return
 	}
 

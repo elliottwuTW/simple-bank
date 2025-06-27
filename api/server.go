@@ -7,23 +7,25 @@ import (
 	"github.com/simple_bank/config"
 	"github.com/simple_bank/database"
 	"github.com/simple_bank/token"
+	"github.com/simple_bank/worker"
 )
 
 // Server serves HTTP requests for our service.
 type Server struct {
-	db         database.Database
-	config     config.Config
-	tokenMaker token.Maker
-	router     *gin.Engine
+	db          database.Database
+	config      config.Config
+	tokenMaker  token.Maker
+	distributor worker.TaskDistributor
+	router      *gin.Engine
 }
 
-func NewServer(db database.Database, config config.Config) (*Server, error) {
+func NewServer(db database.Database, distbtr worker.TaskDistributor, config config.Config) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.Token.SymmetricKey)
 	if err != nil {
 		return nil, err
 	}
 
-	server := &Server{db: db, tokenMaker: tokenMaker}
+	server := &Server{db: db, distributor: distbtr, tokenMaker: tokenMaker}
 
 	// 取得 Gin 背後的 validator engine
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {

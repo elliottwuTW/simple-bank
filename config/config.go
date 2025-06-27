@@ -11,6 +11,10 @@ type DBConfig struct {
 	Name string `mapstructure:"name"`
 }
 
+type RedisConfig struct {
+	Address string `mapstructure:"address"`
+}
+
 type TokenConfig struct {
 	SymmetricKey string        `mapstructure:"symmetricKey"`
 	Duration     time.Duration `mapstructure:"duration"`
@@ -18,6 +22,7 @@ type TokenConfig struct {
 
 type Config struct {
 	DB            DBConfig    `mapstructure:"db"`
+	Redis         RedisConfig `mapstructure:"redis"`
 	Token         TokenConfig `mapstructure:"token"`
 	ServerAddress string      `mapstructure:"serverAddress"`
 }

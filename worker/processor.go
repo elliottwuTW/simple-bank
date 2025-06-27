@@ -7,6 +7,11 @@ import (
 	"github.com/simple_bank/database"
 )
 
+const (
+	QueueCritical = "critical"
+	QueueDefault  = "default"
+)
+
 type TaskProcessor interface {
 	// Start starts the processing server and register handlers
 	Start() error
@@ -26,7 +31,13 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, db database.Database) 
 	// controls parameters of the asynq Server, such as
 	// - the maximum number of concurrent processing of tasks
 	// - the retry delay for a failed task
-	serverConfig := asynq.Config{}
+	serverConfig := asynq.Config{
+		Queues: map[string]int{
+			// critical 佔 10/15 的處理資源，default 佔 5/15 的處理資源
+			QueueCritical: 10,
+			QueueDefault:  5,
+		},
+	}
 	server := asynq.NewServer(redisOpt, serverConfig)
 
 	return &RedisTaskProcessor{
