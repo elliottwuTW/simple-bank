@@ -1,0 +1,20 @@
+services:
+  mongodb:
+    image: mongo:7.0-jammy
+  
+  api:
+    # should build the image from golang source
+    build:
+      # build the image under the path
+      context: .
+      # where is the dockerfile
+      dockerfile: Dockerfile
+    # publish the port to the host machine
+    ports:
+      - "8080:8080"
+    # to tell the api service how to connect to the mongodb service
+    environment:
+      - DB_URI=mongodb://mongodb:27017
+    # https://docs.docker.com/reference/compose-file/services/#depends_on
+    depends_on:
+      - mongodb

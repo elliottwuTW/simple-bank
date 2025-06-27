@@ -8,6 +8,7 @@ WORKDIR /app
 COPY . .
 # Build the app to a single binary executable file
 RUN go build -o main main.go
+# 可以再執行一些像是要下載 binary 的指令
 
 ### Run stage
 ### (We want only the image just with the binary file, and without something like golang code)
@@ -15,6 +16,7 @@ FROM alpine:3.22
 WORKDIR /app
 # Copy the executable binary file from the builder stage to this run stage image
 COPY --from=builder /app/main .
+# 可以 COPY 像是下載完的 binary 到 /app/xxx(binary檔名) => COPY --from=builder /app/migrate.linux-amd64 ./migrate
 COPY env.json .
 
 # Best practice to EXPOSE instruction to inform Docker
