@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 	"github.com/simple_bank/database"
 )
 
@@ -28,6 +29,9 @@ type RedisTaskProcessor struct {
 }
 
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, db database.Database) TaskProcessor {
+	logger := NewLogger()
+	redis.SetLogger(logger)
+
 	// controls parameters of the asynq Server, such as
 	// - the maximum number of concurrent processing of tasks
 	// - the retry delay for a failed task
@@ -37,6 +41,13 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, db database.Database) 
 			QueueCritical: 10,
 			QueueDefault:  5,
 		},
+		ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
+			// 我們甚至可以傳送通知到 email, slack 等等，回報任務失敗了!
+			// log.Error().Err(err).Str("type", task.Type()).
+			// 		Bytes("payload", task.Payload()).Msg("process task failed")
+		}),
+		// 指定 Logger，讓 Asynq 執行遇到問題時的 log，可以符合我們想要的格式!
+		Logger: logger,
 	}
 	server := asynq.NewServer(redisOpt, serverConfig)
 
