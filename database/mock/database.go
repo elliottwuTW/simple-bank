@@ -67,6 +67,21 @@ func (mr *MockDatabaseMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockDatabase)(nil).CreateUser), arg0, arg1)
 }
 
+// CreateUserTx mocks base method.
+func (m *MockDatabase) CreateUserTx(arg0 context.Context, arg1 database.CreateUserTxParams) (database.CreateUserTxResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserTx", arg0, arg1)
+	ret0, _ := ret[0].(database.CreateUserTxResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUserTx indicates an expected call of CreateUserTx.
+func (mr *MockDatabaseMockRecorder) CreateUserTx(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserTx", reflect.TypeOf((*MockDatabase)(nil).CreateUserTx), arg0, arg1)
+}
+
 // DeleteAccount mocks base method.
 func (m *MockDatabase) DeleteAccount(arg0 context.Context, arg1 primitive.ObjectID) error {
 	m.ctrl.T.Helper()

@@ -24,4 +24,7 @@ type Database interface {
 	CreateUser(
 		ctx context.Context, params CreateUserParams,
 	) (model.User, error)
+	CreateUserTx(
+		ctx context.Context, arg CreateUserTxParams,
+	) (CreateUserTxResult, error)
 }

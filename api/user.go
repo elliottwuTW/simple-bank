@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -32,12 +31,25 @@ func (s *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	arg := database.CreateUserParams{
-		Username:       req.Username,
-		HashedPassword: hashedPassword,
-		Email:          req.Email,
+	arg := database.CreateUserTxParams{
+		CreateUserParams: database.CreateUserParams{
+			Username:       req.Username,
+			HashedPassword: hashedPassword,
+			Email:          req.Email,
+		},
+		AfterCreate: func(user model.User) error {
+			// 執行寄送驗證信任務
+			taskPayload := worker.PayloadSendVerifyEmail{Username: user.Username}
+			taskOpt := []asynq.Option{
+				asynq.MaxRetry(10),                // 此任務至多嘗試 10 次
+				asynq.ProcessIn(5 * time.Second),  // 5 秒後再執行
+				asynq.Queue(worker.QueueCritical), // 要送到 critical 的 queue
+			}
+			return s.distributor.DistributeTaskSendVerifyEmail(ctx, &taskPayload, taskOpt...)
+		},
 	}
-	user, err := s.db.CreateUser(ctx, arg)
+
+	txResult, err := s.db.CreateUserTx(ctx, arg)
 	if err != nil {
 		// DB error 特殊處理
 		// if pgErr, ok := err.(*pq.Error);ok {
@@ -50,24 +62,8 @@ func (s *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	// 執行寄送驗證信任務
-	taskPayload := worker.PayloadSendVerifyEmail{Username: user.Username}
-	taskOpt := []asynq.Option{
-		asynq.MaxRetry(10),                // 此任務至多嘗試 10 次
-		asynq.ProcessIn(5 * time.Second),  // 5 秒後再執行
-		asynq.Queue(worker.QueueCritical), // 要送到 critical 的 queue
-	}
-	err = s.distributor.DistributeTaskSendVerifyEmail(ctx, &taskPayload, taskOpt...)
-	if err != nil {
-		ctx.JSON(
-			http.StatusInternalServerError,
-			errorResponse(fmt.Errorf("failed to distribute task to send verify email: %w", err)),
-		)
-		return
-	}
-
 	// 亦可定義 CreateUserRsp 來把 hashedPassword 隱藏
-	ctx.JSON(http.StatusCreated, user)
+	ctx.JSON(http.StatusCreated, txResult.User)
 }
 
 type UserResponse struct {
