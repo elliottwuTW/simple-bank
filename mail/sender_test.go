@@ -8,6 +8,11 @@ import (
 )
 
 func TestSendEmailWithGmail(t *testing.T) {
+	// 有加了 -short flag，只執行不會花太多時間的測試
+	if testing.Short() {
+		t.Skip()
+	}
+
 	cfg, err := config.LoadConfig("..")
 	require.NoError(t, err)
 
