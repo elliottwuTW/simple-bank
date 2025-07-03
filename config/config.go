@@ -10,6 +10,11 @@ type DBConfig struct {
 	URI  string `mapstructure:"uri"`
 	Name string `mapstructure:"name"`
 }
+type EmailConfig struct {
+	Name     string `mapstructure:"name"`
+	Address  string `mapstructure:"address"`
+	Password string `mapstructure:"password"`
+}
 
 type RedisConfig struct {
 	Address string `mapstructure:"address"`
@@ -22,6 +27,7 @@ type TokenConfig struct {
 
 type Config struct {
 	DB            DBConfig    `mapstructure:"db"`
+	Email         EmailConfig `mapstructure:"email"`
 	Redis         RedisConfig `mapstructure:"redis"`
 	Token         TokenConfig `mapstructure:"token"`
 	ServerAddress string      `mapstructure:"serverAddress"`
