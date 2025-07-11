@@ -13,9 +13,10 @@ import (
 )
 
 type MongoDB struct {
-	db         *mongo.Database
-	accountDAO AccountDAO
-	userDAO    UserDAO
+	db             *mongo.Database
+	accountDAO     AccountDAO
+	userDAO        UserDAO
+	verifyEmailDAO VerifyEmailDAO
 }
 
 func New(ctx context.Context, cfg config.DBConfig) (Database, error) {
@@ -33,9 +34,10 @@ func New(ctx context.Context, cfg config.DBConfig) (Database, error) {
 
 	db := client.Database(cfg.Name)
 	return &MongoDB{
-		db:         db,
-		accountDAO: newAccountDAO(db),
-		userDAO:    newUserDAO(db),
+		db:             db,
+		accountDAO:     newAccountDAO(db),
+		userDAO:        newUserDAO(db),
+		verifyEmailDAO: newVerifyEmailDAO(db),
 	}, nil
 }
 
@@ -95,4 +97,10 @@ func (d *MongoDB) DeleteAccount(
 	ctx context.Context, id primitive.ObjectID,
 ) error {
 	return d.accountDAO.DeleteAccount(ctx, id)
+}
+
+func (d *MongoDB) CreateVerifyEmail(
+	ctx context.Context, params CreateVerifyEmailParams,
+) (model.VerifyEmail, error) {
+	return d.verifyEmailDAO.CreateVerifyEmail(ctx, params)
 }

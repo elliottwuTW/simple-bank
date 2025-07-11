@@ -27,4 +27,7 @@ type Database interface {
 	CreateUserTx(
 		ctx context.Context, arg CreateUserTxParams,
 	) (CreateUserTxResult, error)
+	CreateVerifyEmail(
+		ctx context.Context, params CreateVerifyEmailParams,
+	) (model.VerifyEmail, error)
 }

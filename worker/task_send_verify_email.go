@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/hibiken/asynq"
+	"github.com/simple_bank/database"
+	"github.com/simple_bank/util"
 )
 
 const TaskSendVerifyEmail = "task:send_verify_email"
@@ -49,7 +51,30 @@ func (p *RedisTaskProcessor) ProcessTaskSendVerifyEmail(
 
 	// 從 DB 取得 user 的 email
 
-	// TODO: send verify email
+	// 建立驗證信資料
+	params := database.CreateVerifyEmailParams{
+		Username: payload.Username,
+		Email:    "elliott10009@gmail.com", /// DB 取得 user 的 email
+		Secret:   util.RandomString(32),
+	}
+	verifyEmail, err := p.db.CreateVerifyEmail(ctx, params)
+	if err != nil {
+		return fmt.Errorf("failed to create verify email: %w", err)
+	}
+
+	subject := "Welcome to Simple Bank"
+	verifyUrl := fmt.Sprintf(
+		"http://simeple-bank.org/verify-email?id=%s&secret=%s", verifyEmail.ID, verifyEmail.Secret,
+	)
+	content := fmt.Sprintf(`Hello %s,<br/>
+	Thank you for registering with us!<br/>
+	Please <a href="%s">click here</a> to verify your email address.<br/>
+	`, verifyEmail.Username, verifyUrl)
+	to := []string{verifyEmail.Email}
+	err = p.mailer.SendEmail(subject, content, to, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("failed to send verify email: %w", err)
+	}
 
 	// log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
 	// 	Str("email", user.Email).Msg("processed task")
